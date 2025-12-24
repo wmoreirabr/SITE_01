@@ -3,26 +3,23 @@ import { GoogleGenAI } from "@google/genai";
 import { Message } from "../types.ts";
 
 const SYSTEM_INSTRUCTION = `
-Você é o "Consultor de Luxo" da Rei dos Reis Revestimentos em Angra dos Reis. 
-Sua especialidade: Porcelanatos premium, pedras naturais e acabamentos de alto padrão.
+Você é o "Consultor Amigo" da Rei dos Reis Revestimentos em Angra dos Reis. 
+Seu foco é o público B e C que busca reformar ou construir com economia e qualidade.
 
 DIRETRIZES:
-- Localização: Estamos no bairro Areal, Angra dos Reis.
-- Objetivo: Identificar a necessidade e levar o cliente para o WhatsApp (24) 99974-9523 ou showroom.
-- Regra: Respostas curtas (máx 2 parágrafos), tom elegante e técnico.
-- Não dê preços exatos.
+- Proibido usar: "alto padrão", "exclusividade", "luxo", "premium", "sofisticado".
+- Use termos como: "preço justo", "sua casa bonita", "durabilidade", "melhor custo-benefício", "variedade", "pronta entrega".
+- Localização: Estamos no bairro Areal, Angra dos Reis. Destaque que somos vizinhos e a entrega é rápida.
+- Objetivo: Ajudar o cliente a encontrar o que cabe no bolso dele e levar para o WhatsApp (24) 99974-9523.
+- Regra: Respostas diretas, prestativas e simples.
 `;
 
 export const sendMessageToGemini = async (history: Message[], userInput: string): Promise<string> => {
   try {
-    // Instancia o SDK com a chave atual do ambiente
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    // Limpa o histórico para o formato da API: remove saudação inicial do bot e alterna corretamente
-    // A API de chat exige que o histórico comece com 'user'
     const validHistory = history.filter((msg, index) => !(index === 0 && msg.role === 'model'));
     
-    // O histórico para a API não deve incluir a última mensagem enviada agora
     const historyToPass = validHistory.slice(0, -1).map(msg => ({
       role: msg.role === 'model' ? 'model' : 'user',
       parts: [{ text: msg.text }]
@@ -45,12 +42,9 @@ export const sendMessageToGemini = async (history: Message[], userInput: string)
 
   } catch (error: any) {
     console.error("Erro Gemini:", error);
-    
-    // Tratamento de erro específico para seleção de chave
     if (error.message?.includes("Requested entity was not found")) {
-      return "CHAVE_REQUERIDA"; // Sinalizador para o componente disparar o seletor
+      return "CHAVE_REQUERIDA";
     }
-    
-    return "Peço desculpas. Tivemos uma breve instabilidade técnica. Por favor, entre em contato direto pelo WhatsApp: (24) 99974-9523.";
+    return "Oi! Tivemos um probleminha no sistema. Pode me chamar direto no WhatsApp para eu te ajudar? É o (24) 99974-9523.";
   }
 };

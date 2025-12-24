@@ -10,12 +10,11 @@ const Products: React.FC = () => {
     <div className="bg-brand-light min-h-screen">
       <div className="max-w-7xl mx-auto px-6 py-12 md:py-20">
         <header className="mb-12 md:mb-20">
-          <span className="text-xs font-black uppercase tracking-[0.3em] text-brand-yellow mb-4 block text-center">Coleções Premium</span>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter text-center text-brand-blue">Nossos Revestimentos</h1>
+          <span className="text-xs font-black uppercase tracking-[0.3em] text-brand-yellow mb-4 block text-center">Para sua Construção</span>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter text-center text-brand-blue">Tudo para sua Obra</h1>
           <div className="w-16 md:w-24 h-1 bg-brand-yellow mx-auto mt-6"></div>
         </header>
 
-        {/* Grid ajustado para ser mais flexível */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 lg:gap-16">
           {PRODUCTS.map((product) => (
             <div key={product.id} className="group cursor-pointer bg-white p-4 rounded-2xl shadow-sm hover:shadow-xl transition-all border border-gray-100">
@@ -45,7 +44,7 @@ const Products: React.FC = () => {
                   onClick={openChat}
                   className="w-full py-3 bg-brand-blue/5 text-brand-blue text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-brand-yellow hover:text-brand-blue transition-all"
                 >
-                  Ver Detalhes
+                  Ver Preço no Chat
                 </button>
               </div>
             </div>
@@ -54,16 +53,15 @@ const Products: React.FC = () => {
 
         <div className="mt-24 md:mt-32 text-center p-8 md:p-16 bg-brand-blue rounded-3xl border-4 border-brand-yellow shadow-2xl relative overflow-hidden">
           <div className="relative z-10">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-white">Procurando algo específico?</h2>
-            <p className="text-gray-300 mb-8 max-w-lg mx-auto text-sm md:text-base">Temos mais de 2.000 modelos em nosso catálogo físico em Angra dos Reis. Fale com um consultor agora.</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-white">Não achou o que procurava?</h2>
+            <p className="text-gray-300 mb-8 max-w-lg mx-auto text-sm md:text-base">Temos muito mais opções na nossa loja física. Fale com a gente agora e descubra como economizar.</p>
             <button 
               onClick={openChat}
               className="inline-block bg-brand-yellow text-brand-blue px-12 py-4 rounded-full text-xs font-black uppercase tracking-widest hover:bg-white hover:scale-105 transition-all shadow-xl"
             >
-              Consultoria Gratuita
+              Falar com um Vendedor
             </button>
           </div>
-          {/* Decorative element to ensure context */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
         </div>
       </div>

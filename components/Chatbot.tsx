@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Icons } from '../constants.tsx';
 import { Message } from '../types.ts';
@@ -9,15 +8,13 @@ interface ChatbotProps {
   onClose: () => void;
 }
 
-// Fixed: Correctly declaring AIStudio and Window extension to resolve type conflict errors.
+// Fixed: Unified the 'aistudio' declaration on Window interface to avoid modifier conflicts
 declare global {
-  interface AIStudio {
-    hasSelectedApiKey: () => Promise<boolean>;
-    openSelectKey: () => Promise<void>;
-  }
-
   interface Window {
-    aistudio: AIStudio;
+    aistudio?: {
+      hasSelectedApiKey: () => Promise<boolean>;
+      openSelectKey: () => Promise<void>;
+    };
   }
 }
 
@@ -25,7 +22,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: 'model', 
-      text: 'Bem-vindo à Rei dos Reis. Sou seu consultor virtual. Como posso ajudar no seu projeto em Angra hoje?' 
+      text: 'Oi! Sou o assistente da Rei dos Reis. Como posso te ajudar a deixar sua casa linda gastando pouco hoje?' 
     }
   ]);
   const [inputValue, setInputValue] = useState('');
@@ -42,12 +39,11 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     const text = inputValue.trim();
     if (!text || isLoading) return;
 
-    // Fixed: Guideline implementation - assume success after openSelectKey and proceed to mitigate race conditions.
+    // Fixed: Safe access to window.aistudio using optional chaining or existence check
     if (window.aistudio) {
       const hasKey = await window.aistudio.hasSelectedApiKey();
       if (!hasKey) {
         await window.aistudio.openSelectKey();
-        // Proceeding without returning to handle potential race condition as instructed.
       }
     }
 
@@ -64,9 +60,8 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
       if (response === "CHAVE_REQUERIDA") {
         setMessages(prev => [...prev, { 
           role: 'model', 
-          text: 'Para prosseguir com o atendimento avançado, é necessário configurar sua chave de acesso. Clique no botão abaixo ou fale conosco no WhatsApp.' 
+          text: 'Para eu te passar as melhores ofertas, preciso que ative sua chave de acesso clicando no botão que vai aparecer.' 
         }]);
-        // Re-prompt for key selection if the API returns a 404 (requested entity not found).
         if (window.aistudio) await window.aistudio.openSelectKey();
       } else {
         setMessages(prev => [...prev, { role: 'model', text: response }]);
@@ -74,7 +69,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     } catch (err) {
       setMessages(prev => [...prev, { 
         role: 'model', 
-        text: 'Erro de conexão. Por favor, utilize o WhatsApp para suporte imediato: (24) 99974-9523.' 
+        text: 'Opa, deu um errinho aqui. Me chama no WhatsApp (24) 99974-9523 que a gente conversa melhor!' 
       }]);
     } finally {
       setIsLoading(false);
@@ -89,12 +84,11 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
       
       <div className="relative bg-white w-full md:w-[480px] flex flex-col h-[94dvh] md:h-[85vh] md:max-h-[800px] md:mr-6 shadow-[0_0_60px_rgba(0,0,0,0.3)] rounded-t-[2.5rem] md:rounded-[2rem] overflow-hidden animate-in slide-in-from-bottom md:slide-in-from-right duration-500 ease-out">
         
-        {/* Header - Z-Index alto e fixo */}
         <div className="px-6 py-8 md:px-10 bg-brand-blue text-white flex-shrink-0 relative border-b border-brand-yellow/10">
           <div className="relative z-10 flex items-center justify-between">
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.5em] text-brand-yellow mb-1">Consultoria Técnica</p>
-              <h3 className="text-xl font-bold tracking-tight">Showroom Digital</h3>
+              <p className="text-[9px] font-black uppercase tracking-[0.5em] text-brand-yellow mb-1">Dúvidas sobre Obra</p>
+              <h3 className="text-xl font-bold tracking-tight">Atendimento Prático</h3>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
               <Icons.Close />
@@ -102,7 +96,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Scrollable Messages com preenchimento extra no final */}
         <div ref={scrollRef} className="flex-grow overflow-y-auto p-6 md:p-10 space-y-8 bg-brand-light/50 scroll-smooth">
           {messages.map((msg, idx) => (
             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -124,10 +117,9 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
               </div>
             </div>
           )}
-          <div className="h-4"></div> {/* Safe space */}
+          <div className="h-4"></div>
         </div>
 
-        {/* Footer / Input - Fixado na base */}
         <div className="p-6 md:p-10 border-t border-gray-100 bg-white flex-shrink-0">
           <div className="relative flex items-center gap-3">
             <input
@@ -135,7 +127,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Descreva seu projeto..."
+              placeholder="O que você precisa hoje?"
               className="flex-grow bg-brand-light border-2 border-transparent focus:border-brand-yellow/40 rounded-2xl px-5 py-4 text-sm focus:outline-none transition-all placeholder-brand-blue/30"
             />
             <button 
@@ -152,10 +144,8 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
               target="_blank"
               className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand-blue/40 hover:text-brand-blue transition-colors"
             >
-              <Icons.WhatsApp /> Suporte Humano (24) 99974-9523
+              <Icons.WhatsApp /> Chamar no Zap (24) 99974-9523
             </a>
-            {/* Billing Link obrigatório */}
-            <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" className="text-[8px] text-gray-400 hover:underline">Informações sobre faturamento da API</a>
           </div>
         </div>
       </div>
