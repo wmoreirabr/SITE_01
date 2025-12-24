@@ -10,7 +10,6 @@ interface ChatbotProps {
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
-  // Iniciamos com uma mensagem estática para garantir feedback imediato ao usuário
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: 'model', 
@@ -28,22 +27,23 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   }, [messages, isLoading]);
 
   const handleSend = async () => {
-    if (!inputValue.trim() || isLoading) return;
+    const text = inputValue.trim();
+    if (!text || isLoading) return;
 
-    const userMsg: Message = { role: 'user', text: inputValue };
-    const historyBeforeResponse = [...messages, userMsg];
+    const userMsg: Message = { role: 'user', text };
+    const newHistory = [...messages, userMsg];
     
-    setMessages(historyBeforeResponse);
+    setMessages(newHistory);
     setInputValue('');
     setIsLoading(true);
 
     try {
-      const botResponse = await sendMessageToGemini(historyBeforeResponse, inputValue);
-      setMessages([...historyBeforeResponse, { role: 'model', text: botResponse }]);
+      const botResponse = await sendMessageToGemini(newHistory, text);
+      setMessages(prev => [...prev, { role: 'model', text: botResponse }]);
     } catch (err) {
-      setMessages([...historyBeforeResponse, { 
+      setMessages(prev => [...prev, { 
         role: 'model', 
-        text: 'Desculpe, tive um problema de conexão. Vamos conversar pelo WhatsApp? (24) 99974-9523' 
+        text: 'Tive uma instabilidade na conexão. Para não te fazer esperar, você pode falar com um especialista agora no WhatsApp: (24) 99974-9523.' 
       }]);
     } finally {
       setIsLoading(false);
