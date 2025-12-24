@@ -16,25 +16,35 @@ DIRETRIZES:
 
 export const sendMessageToGemini = async (history: Message[], userInput: string): Promise<string> => {
   try {
-    // Inicialização direta conforme diretrizes da SDK
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    // A chave DEVE vir de process.env.API_KEY conforme as regras.
+    const apiKey = process.env.API_KEY;
+    
+    if (!apiKey || apiKey === "undefined" || apiKey === "") {
+      console.error("ERRO CRÍTICO: API_KEY não encontrada em process.env.API_KEY");
+      return "O sistema de chat está sem chave de acesso configurada. Por favor, verifique se a API_KEY foi adicionada corretamente no painel do Netlify.";
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
     
     /**
-     * CONSTRUÇÃO DO CONTEÚDO:
-     * A API exige alternância estrita entre 'user' e 'model'.
-     * O histórico já contém a última mensagem do usuário enviada pelo componente.
+     * REGRAS DE CONTEÚDO (Gemini API):
+     * 1. O histórico deve ser um array de objetos { role, parts: [{ text }] }.
+     * 2. O primeiro item DEVE ser do papel 'user'.
+     * 3. Os papéis DEVEM alternar: user -> model -> user -> model...
      */
-    const contents = history
-      .filter((msg, index) => {
-        // Regra 1: O primeiro turno deve ser obrigatoriamente do usuário.
-        // Pulamos a saudação inicial estática do modelo.
-        if (index === 0 && msg.role === 'model') return false;
-        return true;
-      })
-      .map(msg => ({
-        role: msg.role === 'model' ? 'model' : 'user',
-        parts: [{ text: msg.text }]
-      }));
+    
+    // Removemos a saudação inicial do bot do histórico enviado para a API,
+    // pois a API exige que o primeiro turno seja obrigatoriamente do usuário.
+    const validHistory = history.filter((msg, index) => {
+      if (index === 0 && msg.role === 'model') return false;
+      return true;
+    });
+
+    // Mapeamos para o formato exigido pela SDK
+    const contents = validHistory.map(msg => ({
+      role: msg.role === 'model' ? 'model' : 'user',
+      parts: [{ text: msg.text }]
+    }));
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -43,23 +53,31 @@ export const sendMessageToGemini = async (history: Message[], userInput: string)
         systemInstruction: SYSTEM_INSTRUCTION,
         temperature: 0.7,
         topP: 0.95,
-        topK: 40
+        topK: 40,
+        // Mantemos thinkingBudget em 0 para respostas de chat rápidas e econômicas
+        thinkingConfig: { thinkingBudget: 0 }
       }
     });
 
-    const text = response.text;
-    if (!text) throw new Error("Resposta vazia da API");
-    
-    return text;
-
-  } catch (error: any) {
-    console.error("Erro detalhado no Chatbot:", error);
-    
-    // Tratamento de erros amigável para o usuário
-    if (error.message?.includes("API_KEY") || error.message?.includes("403")) {
-      return "Estou passando por uma atualização técnica. Por favor, fale diretamente com nosso time no WhatsApp: (24) 99974-9523.";
+    if (!response.text) {
+      return "Entendi sua dúvida, mas tive um problema ao gerar a resposta. Pode tentar perguntar de outra forma ou nos chamar no WhatsApp (24) 99974-9523?";
     }
     
-    throw error;
+    return response.text;
+
+  } catch (error: any) {
+    console.error("Erro na comunicação com Gemini:", error);
+    
+    // Tratamento amigável de erros comuns
+    if (error.message?.includes("429")) {
+      return "Muitas pessoas estão consultando agora! Aguarde um instante ou fale com um humano no WhatsApp: (24) 99974-9523";
+    }
+    
+    if (error.message?.includes("API key") || error.message?.includes("403") || error.message?.includes("401")) {
+      return "Minha chave de inteligência parece inválida ou expirou. Por favor, use o WhatsApp para atendimento imediato: (24) 99974-9523.";
+    }
+
+    // Retorna o erro detalhado para ajudar na correção
+    return `Tive uma dificuldade técnica (${error.message || 'Erro de Rede'}). Para não atrasar seu projeto, fale conosco no WhatsApp: (24) 99974-9523.`;
   }
 };
