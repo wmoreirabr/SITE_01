@@ -6,9 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rei dos Reis Revestimentos | Excelência em Acabamentos</title>
     
-    <!-- SHIM PARA AMBIENTE DE PRODUÇÃO -->
+    <!-- GARANTE QUE O OBJETO PROCESS EXISTA PARA O SDK DO GEMINI -->
     <script>
-      window.process = window.process || { env: {} };
+      if (typeof window.process === 'undefined') {
+        window.process = { env: {} };
+      }
     </script>
 
     <!-- FRAMEWORK DE ESTILIZAÇÃO: TAILWIND CSS -->
@@ -19,8 +21,8 @@
           extend: {
             colors: {
               brand: {
-                blue: '#003366', // Azul Marinho Profissional
-                yellow: '#FFD700', // Amarelo Ouro
+                blue: '#003366',
+                yellow: '#FFD700',
                 light: '#F8F9FA'
               }
             }
