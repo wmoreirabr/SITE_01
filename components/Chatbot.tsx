@@ -13,7 +13,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: 'model', 
-      text: 'Olá! Sou o consultor virtual do Rei dos Reis. Em qual ambiente você está trabalhando hoje? (Ex: Sala, Banheiro, Área Externa)' 
+      text: 'Bem-vindo ao atendimento personalizado Rei dos Reis. Sou seu consultor virtual e estou aqui para auxiliar na escolha técnica do seu revestimento. Para começar, em qual ambiente você está focando agora?' 
     }
   ]);
   const [inputValue, setInputValue] = useState('');
@@ -31,19 +31,19 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     if (!text || isLoading) return;
 
     const userMsg: Message = { role: 'user', text };
-    const currentMessages = [...messages, userMsg];
+    const updatedMessages = [...messages, userMsg];
     
-    setMessages(currentMessages);
+    setMessages(updatedMessages);
     setInputValue('');
     setIsLoading(true);
 
     try {
-      const botResponse = await sendMessageToGemini(currentMessages, text);
-      setMessages(prev => [...prev, { role: 'model', text: botResponse }]);
+      const response = await sendMessageToGemini(updatedMessages, text);
+      setMessages(prev => [...prev, { role: 'model', text: response }]);
     } catch (err) {
       setMessages(prev => [...prev, { 
         role: 'model', 
-        text: 'Desculpe, tive um pequeno problema técnico na conexão. Que tal continuarmos pelo WhatsApp? (24) 99974-9523' 
+        text: 'Sentimos muito, mas nossa linha direta digital está instável. Por favor, fale com nosso especialista sênior no (24) 99974-9523.' 
       }]);
     } finally {
       setIsLoading(false);
@@ -53,82 +53,77 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-brand-blue/30 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="absolute inset-0" onClick={onClose}></div>
+    <div className="fixed inset-0 z-[100] flex justify-end items-end md:items-center md:p-6">
+      <div className="absolute inset-0 bg-brand-blue/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
       
-      <div className="relative bg-white text-brand-blue w-full md:w-1/3 min-w-[320px] max-w-full md:border-l-4 border-brand-yellow flex flex-col h-full shadow-2xl animate-in slide-in-from-right duration-500 ease-out">
+      <div className="relative bg-white w-full md:w-[450px] flex flex-col h-[95dvh] md:h-[85vh] max-h-[900px] shadow-2xl rounded-t-3xl md:rounded-3xl overflow-hidden animate-in slide-in-from-bottom md:slide-in-from-right duration-500 ease-out border border-brand-yellow/20">
         
-        {/* Header */}
-        <div className="px-6 py-6 flex items-center justify-between bg-brand-blue text-white shadow-lg">
-          <div>
-            <h3 className="text-lg font-bold tracking-tight">Consultor Rei dos Reis</h3>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              <p className="text-[10px] text-brand-yellow font-black uppercase tracking-widest">Online Agora</p>
+        {/* Header - Compactado para Mobile */}
+        <div className="px-6 py-8 md:px-8 md:py-10 bg-brand-blue text-white relative overflow-hidden flex-shrink-0">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-yellow/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+          <div className="relative z-10 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-yellow mb-1">Showroom Virtual</p>
+              <h3 className="text-xl md:text-2xl font-bold tracking-tight">Consultor de Projetos</h3>
             </div>
+            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+              <Icons.Close />
+            </button>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors text-brand-yellow"
-          >
-            <Icons.Close />
-          </button>
         </div>
 
-        {/* Messages area */}
-        <div 
-          ref={scrollRef}
-          className="flex-grow overflow-y-auto p-6 space-y-6 bg-brand-light"
-        >
+        {/* Messages */}
+        <div ref={scrollRef} className="flex-grow overflow-y-auto p-6 md:p-8 space-y-6 bg-brand-light/30">
           {messages.map((msg, idx) => (
-            <div 
-              key={idx} 
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div 
-                className={`max-w-[85%] px-5 py-3 rounded-2xl text-sm leading-relaxed shadow-sm border ${
-                  msg.role === 'user' 
-                    ? 'bg-brand-blue text-white rounded-br-none font-medium border-brand-blue' 
-                    : 'bg-white text-brand-blue rounded-bl-none border-gray-200'
-                }`}
-              >
+            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[85%] px-5 py-3.5 rounded-2xl shadow-sm text-sm leading-relaxed ${
+                msg.role === 'user' 
+                  ? 'bg-brand-blue text-white rounded-br-none' 
+                  : 'bg-white text-brand-blue border border-gray-100 rounded-bl-none'
+              }`}>
                 {msg.text}
               </div>
             </div>
           ))}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white border border-gray-200 px-5 py-3 rounded-2xl rounded-bl-none flex gap-1">
-                <span className="w-1.5 h-1.5 bg-brand-yellow rounded-full animate-bounce"></span>
-                <span className="w-1.5 h-1.5 bg-brand-yellow rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                <span className="w-1.5 h-1.5 bg-brand-yellow rounded-full animate-bounce [animation-delay:0.4s]"></span>
+              <div className="bg-white border border-gray-100 px-5 py-3.5 rounded-2xl rounded-bl-none flex gap-1.5 items-center">
+                <div className="w-1.5 h-1.5 bg-brand-yellow rounded-full animate-bounce"></div>
+                <div className="w-1.5 h-1.5 bg-brand-yellow rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                <div className="w-1.5 h-1.5 bg-brand-yellow rounded-full animate-bounce [animation-delay:0.4s]"></div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Input area */}
-        <div className="p-6 border-t border-gray-100 bg-white pb-10 md:pb-6">
-          <div className="relative flex items-center">
+        {/* Action Area */}
+        <div className="p-6 md:p-8 border-t border-gray-100 bg-white flex-shrink-0">
+          <div className="relative flex items-center gap-3">
             <input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ex: Procuro piso para sala..."
-              className="w-full bg-brand-light border-2 border-gray-100 rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-brand-blue transition-all pr-12 text-brand-blue placeholder-gray-400"
+              placeholder="Digite sua dúvida..."
+              className="flex-grow bg-brand-light border-2 border-transparent focus:border-brand-yellow/30 rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
             />
             <button 
               onClick={handleSend}
               disabled={isLoading || !inputValue.trim()}
-              className="absolute right-3 p-2 bg-brand-yellow text-brand-blue rounded-lg hover:bg-brand-blue hover:text-white transition-all disabled:opacity-50"
+              className="p-3.5 bg-brand-blue text-brand-yellow rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-30 shadow-lg"
             >
               <Icons.Send />
             </button>
           </div>
-          <p className="text-[10px] text-center text-gray-400 mt-4 uppercase tracking-widest font-bold">
-            Atendimento via Inteligência Artificial
-          </p>
+          <div className="mt-4 flex justify-center">
+            <a 
+              href="https://wa.me/5524999749523" 
+              target="_blank"
+              className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand-blue/50 hover:text-brand-blue transition-colors"
+            >
+              <Icons.WhatsApp /> Falar com Atendente Humano
+            </a>
+          </div>
         </div>
       </div>
     </div>
