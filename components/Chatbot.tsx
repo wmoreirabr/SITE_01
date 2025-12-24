@@ -31,19 +31,19 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     if (!text || isLoading) return;
 
     const userMsg: Message = { role: 'user', text };
-    const newHistory = [...messages, userMsg];
+    const currentMessages = [...messages, userMsg];
     
-    setMessages(newHistory);
+    setMessages(currentMessages);
     setInputValue('');
     setIsLoading(true);
 
     try {
-      const botResponse = await sendMessageToGemini(newHistory, text);
+      const botResponse = await sendMessageToGemini(currentMessages, text);
       setMessages(prev => [...prev, { role: 'model', text: botResponse }]);
     } catch (err) {
       setMessages(prev => [...prev, { 
         role: 'model', 
-        text: 'Tive uma instabilidade na conexão. Para não te fazer esperar, você pode falar com um especialista agora no WhatsApp: (24) 99974-9523.' 
+        text: 'Desculpe, tive um pequeno problema técnico na conexão. Que tal continuarmos pelo WhatsApp? (24) 99974-9523' 
       }]);
     } finally {
       setIsLoading(false);

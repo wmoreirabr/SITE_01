@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rei dos Reis Revestimentos | Excelência em Acabamentos</title>
     
-    <!-- GARANTE QUE O OBJETO PROCESS EXISTA PARA O SDK DO GEMINI SEM APAGAR VALORES EXISTENTES -->
+    <!-- SHIM DE PROCESSO PARA COMPATIBILIDADE COM O SDK -->
     <script>
-      window.process = window.process || { env: {} };
+      window.process = window.process || {};
       window.process.env = window.process.env || {};
     </script>
 
