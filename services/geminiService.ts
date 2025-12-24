@@ -25,28 +25,57 @@ NÃO pule etapas. Comece saudando e perguntando sobre o ambiente do projeto.
 
 export const sendMessageToGemini = async (history: Message[], userInput: string): Promise<string> => {
   try {
-    // Instanciação dentro da função conforme diretrizes
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
-    const contents = history.map(msg => ({
-      role: msg.role === 'model' ? 'model' : 'user',
-      parts: [{ text: msg.text }]
-    }));
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+      console.warn("API Key não encontrada em process.env.API_KEY");
+      return "Estou com um problema de configuração. Por favor, tente falar conosco pelo WhatsApp (24) 99974-9523.";
+    }
 
-    contents.push({ role: 'user', parts: [{ text: userInput }] });
+    const ai = new GoogleGenAI({ apiKey });
+    
+    // A API do Gemini exige que o histórico comece com 'user' e alterne.
+    // Como nossa primeira mensagem no chat UI é uma saudação 'model', precisamos filtrá-la
+    // para que a requisição seja válida.
+    const validContents = history
+      .filter((msg, index) => {
+        // Se a primeira mensagem for do modelo, ignoramos ela para a API
+        if (index === 0 && msg.role === 'model') return false;
+        return true;
+      })
+      .map(msg => ({
+        role: msg.role === 'model' ? 'model' : 'user',
+        parts: [{ text: msg.text }]
+      }));
+
+    // Adiciona a pergunta atual do usuário
+    validContents.push({ 
+      role: 'user', 
+      parts: [{ text: userInput }] 
+    });
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: contents as any,
+      contents: validContents as any,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.6,
+        temperature: 0.7,
       }
     });
 
-    return response.text || "Pode repetir? Tive um pequeno soluço técnico.";
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    return "Estou com um problema de conexão. Que tal falarmos pelo WhatsApp (24) 99974-9523?";
+    const text = response.text;
+    if (!text) {
+      throw new Error("Resposta vazia da API");
+    }
+
+    return text;
+  } catch (error: any) {
+    console.error("Gemini API Error Details:", error);
+    
+    // Mensagem amigável baseada no erro
+    if (error.message?.includes("API key")) {
+      return "Erro de autenticação. Por favor, verifique se a chave da API está correta.";
+    }
+    
+    return "Tive uma pequena falha de conexão agora. Que tal falarmos pelo WhatsApp (24) 99974-9523?";
   }
 };
