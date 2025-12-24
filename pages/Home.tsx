@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useChat } from '../components/Layout';
+import { useChat } from '../components/Layout.tsx';
 
 const Home: React.FC = () => {
   const { openChat } = useChat();
@@ -13,7 +13,7 @@ const Home: React.FC = () => {
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?auto=format&fit=crop&q=80&w=2000" 
-            alt="Interior elegante" 
+            alt="Interior elegante com porcelanato" 
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-brand-blue/50"></div>
@@ -52,7 +52,11 @@ const Home: React.FC = () => {
               </p>
             </div>
             <div className="flex-1 w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-8 border-brand-yellow/10">
-              <img src="https://picsum.photos/seed/home2/1200/900" alt="Processo" className="w-full h-full object-cover hover:scale-110 transition-transform duration-1000" />
+              <img 
+                src="https://images.unsplash.com/photo-1523413184749-805903df5204?auto=format&fit=crop&q=80&w=1200" 
+                alt="Detalhe de revestimento cerâmico premium" 
+                className="w-full h-full object-cover hover:scale-110 transition-transform duration-1000" 
+              />
             </div>
           </div>
         </div>
