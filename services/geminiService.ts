@@ -5,56 +5,41 @@ import { Message } from "../types.ts";
 const SYSTEM_INSTRUCTION = `
 Você é o Consultor Especialista da "Rei dos Reis Revestimentos" em Angra dos Reis.
 Sua missão: ajudar na escolha de porcelanatos, louças, metais e granitos.
-
-DIRETRIZES:
-- Localização: Bairro Areal, Angra dos Reis.
-- Tom: Profissional, prestativo e focado em vendas.
-- Respostas curtas: Máximo 2 a 3 frases.
-- Objetivo: Qualificar o interesse do cliente (Ambiente -> Tipo de Obra -> Estilo).
-- Conversão: Se o cliente parecer decidido ou tiver dúvidas técnicas complexas, direcione para o WhatsApp (24) 99974-9523.
+Localização: Bairro Areal, Angra dos Reis.
+Respostas curtas (2 frases) e foco em levar o cliente para o WhatsApp (24) 99974-9523.
 `;
 
 export const sendMessageToGemini = async (history: Message[], userInput: string): Promise<string> => {
   try {
-    // Inicializa a IA conforme as diretrizes obrigatórias
+    // Inicialização direta conforme regras da documentação
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    // Filtramos o histórico para garantir que o primeiro turno seja sempre 'user'
-    // A saudação inicial do bot (índice 0) é ignorada no envio para a API
+    // A API Gemini 3 exige que o histórico comece com 'user'.
+    // Removemos a primeira mensagem (que é a saudação do robô).
     const contents = history
-      .filter((msg, index) => {
-        if (index === 0 && msg.role === 'model') return false;
-        return true;
-      })
+      .slice(1) 
       .map(msg => ({
         role: msg.role === 'model' ? 'model' : 'user',
         parts: [{ text: msg.text }]
       }));
 
+    // Se o histórico estiver vazio após o filtro, enviamos apenas a mensagem atual
+    const finalPayload = contents.length > 0 ? contents : [{ role: 'user', parts: [{ text: userInput }] }];
+
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: contents,
+      contents: finalPayload,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         temperature: 0.7,
-        topP: 0.95,
-        topK: 40
       },
     });
 
-    const text = response.text;
-    if (!text) throw new Error("A IA retornou uma resposta vazia.");
-    
-    return text;
+    return response.text || "Pode repetir? Não consegui processar agora.";
 
   } catch (error: any) {
-    console.error("Erro na API Gemini:", error);
-    
-    // Se for erro de chave (403/401), avisamos no chat de forma clara
-    if (error.message?.includes("API_KEY") || error.message?.includes("403") || error.message?.includes("401")) {
-      return "Estou com uma instabilidade técnica na minha chave de IA. Por favor, fale com nossos especialistas no WhatsApp: (24) 99974-9523 para um atendimento imediato!";
-    }
-
-    throw error;
+    console.error("Erro na IA:", error);
+    // Mensagem amigável padrão para instabilidades de conexão ou chave
+    return "Tive uma instabilidade na conexão. Para não te fazer esperar, você pode falar com um especialista agora no WhatsApp: (24) 99974-9523.";
   }
 };

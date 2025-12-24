@@ -6,13 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rei dos Reis Revestimentos | Excelência em Acabamentos</title>
     
-    <!-- SHIM DE PROCESSO PARA COMPATIBILIDADE COM O SDK -->
     <script>
-      window.process = window.process || {};
-      window.process.env = window.process.env || {};
+      // Garante que process.env exista para evitar erros de referência
+      window.process = window.process || { env: {} };
+      if (!window.process.env) window.process.env = {};
     </script>
 
-    <!-- FRAMEWORK DE ESTILIZAÇÃO: TAILWIND CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -30,34 +29,18 @@
       }
     </script>
     
-    <!-- FONTES DO GOOGLE -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- ESTILOS GLOBAIS -->
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            scroll-behavior: smooth;
-        }
-        .glass {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-        }
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #003366;
-            border-radius: 4px;
-        }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #003366; border-radius: 4px; }
     </style>
 
-    <!-- MAPA DE IMPORTAÇÃO DE MÓDULOS -->
     <script type="importmap">
     {
       "imports": {
