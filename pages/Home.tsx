@@ -53,8 +53,8 @@ const Home: React.FC = () => {
             </div>
             <div className="flex-1 w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-8 border-brand-yellow/10">
               <img 
-                src="https://images.unsplash.com/photo-1523413184749-805903df5204?auto=format&fit=crop&q=80&w=1200" 
-                alt="Detalhe de revestimento cerâmico premium" 
+                src="https://lh3.googleusercontent.com/p/AF1QipP5phj6eBOXfPWQdpOBtAoEiItKP0pQf58k032f=s680-w680-h510-rw" 
+                alt="Showroom Rei dos Reis Revestimentos" 
                 className="w-full h-full object-cover hover:scale-110 transition-transform duration-1000" 
               />
             </div>
