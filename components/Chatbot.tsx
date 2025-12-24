@@ -1,8 +1,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Icons } from '../constants';
-import { Message } from '../types';
-import { sendMessageToGemini } from '../services/geminiService';
+import { Icons } from '../constants.tsx';
+import { Message } from '../types.ts';
+import { sendMessageToGemini } from '../services/geminiService.ts';
 
 interface ChatbotProps {
   isOpen: boolean;

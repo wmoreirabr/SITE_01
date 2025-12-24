@@ -1,8 +1,8 @@
 
 import React, { useState, createContext, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Icons } from '../constants';
-import Chatbot from './Chatbot';
+import { Icons } from '../constants.tsx';
+import Chatbot from './Chatbot.tsx';
 
 interface ChatContextType {
   openChat: () => void;

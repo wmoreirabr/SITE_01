@@ -1,9 +1,6 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { Message } from "../types";
-
-// Fix: Strictly following the coding guidelines for API key initialization
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+import { Message } from "../types.ts";
 
 const SYSTEM_INSTRUCTION = `
 Você é o Consultor Especialista Vendedor da "Rei dos Reis Revestimentos" em Angra dos Reis. 
@@ -28,6 +25,9 @@ NÃO pule etapas. Comece saudando e perguntando sobre o ambiente do projeto.
 
 export const sendMessageToGemini = async (history: Message[], userInput: string): Promise<string> => {
   try {
+    // Instanciação dentro da função conforme diretrizes
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
     const contents = history.map(msg => ({
       role: msg.role === 'model' ? 'model' : 'user',
       parts: [{ text: msg.text }]
@@ -35,15 +35,12 @@ export const sendMessageToGemini = async (history: Message[], userInput: string)
 
     contents.push({ role: 'user', parts: [{ text: userInput }] });
 
-    // Fix: Using generateContent with the correct model and configuration according to guidelines
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: contents as any,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         temperature: 0.6,
-        // Removed maxOutputTokens to avoid potential empty responses on Gemini 3 models when thinking budget is not explicitly defined, 
-        // as the system instruction already enforces short answers.
       }
     });
 
