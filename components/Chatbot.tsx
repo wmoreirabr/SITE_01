@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Icons } from '../constants.tsx';
 import { Message } from '../types.ts';
@@ -8,13 +9,15 @@ interface ChatbotProps {
   onClose: () => void;
 }
 
-// Fixed: Unified the 'aistudio' declaration on Window interface to avoid modifier conflicts
+// Fixed: The 'aistudio' property is already defined on the Window interface with type 'AIStudio' in this environment.
+// We use the existing type name and augment the AIStudio interface to avoid the 'Subsequent property declarations' error.
 declare global {
+  interface AIStudio {
+    hasSelectedApiKey: () => Promise<boolean>;
+    openSelectKey: () => Promise<void>;
+  }
   interface Window {
-    aistudio?: {
-      hasSelectedApiKey: () => Promise<boolean>;
-      openSelectKey: () => Promise<void>;
-    };
+    aistudio?: AIStudio;
   }
 }
 
@@ -39,7 +42,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     const text = inputValue.trim();
     if (!text || isLoading) return;
 
-    // Fixed: Safe access to window.aistudio using optional chaining or existence check
+    // Fixed: Safe access to window.aistudio using the augmented AIStudio type
     if (window.aistudio) {
       const hasKey = await window.aistudio.hasSelectedApiKey();
       if (!hasKey) {

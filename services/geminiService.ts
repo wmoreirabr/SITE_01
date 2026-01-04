@@ -1,4 +1,3 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { Message } from "../types.ts";
 
@@ -16,35 +15,44 @@ DIRETRIZES:
 
 export const sendMessageToGemini = async (history: Message[], userInput: string): Promise<string> => {
   try {
+    // Correct initialization as per guidelines
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    const validHistory = history.filter((msg, index) => !(index === 0 && msg.role === 'model'));
-    
-    const historyToPass = validHistory.slice(0, -1).map(msg => ({
-      role: msg.role === 'model' ? 'model' : 'user',
-      parts: [{ text: msg.text }]
-    }));
+    // Format history: Gemini chat history must start with a 'user' turn.
+    // Filter out the initial bot greeting and map to the required structure.
+    const chatHistory = history
+      .filter((msg, index) => !(index === 0 && msg.role === 'model'))
+      .slice(0, -1) // Remove the last user input as it's sent via sendMessage
+      .map(msg => ({
+        role: msg.role === 'model' ? 'model' : 'user',
+        parts: [{ text: msg.text }]
+      }));
 
     const chat = ai.chats.create({
       model: 'gemini-3-flash-preview',
-      history: historyToPass as any,
+      history: chatHistory as any,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         temperature: 0.7,
       },
     });
 
-    const result = await chat.sendMessage({ message: userInput });
-    const text = result.text;
+    const response = await chat.sendMessage({ message: userInput });
     
-    if (!text) throw new Error("Resposta vazia");
+    // Use .text property directly as per extracting text guidelines
+    const text = response.text;
+    
+    if (!text) throw new Error("Empty response from model");
     return text;
 
   } catch (error: any) {
     console.error("Erro Gemini:", error);
-    if (error.message?.includes("Requested entity was not found")) {
+    
+    // Handling specific error codes or messages if necessary
+    if (error.message?.includes("Requested entity was not found") || error.status === 404) {
       return "CHAVE_REQUERIDA";
     }
+    
     return "Oi! Tivemos um probleminha no sistema. Pode me chamar direto no WhatsApp para eu te ajudar? É o (24) 99974-9523.";
   }
 };
